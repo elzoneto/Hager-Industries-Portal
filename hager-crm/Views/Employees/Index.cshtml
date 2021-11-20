@@ -1,0 +1,155 @@
+﻿@model IEnumerable<hager_crm.Models.Employee>
+@using hager_crm.Helpers;
+@using hager_crm.Utils;
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var gridFilter = ViewBag.gridFilter;
+    var sorts = gridFilter.OuterSorts;
+    int changeColer = (int)@ViewData["ChangeColor"];
+}
+
+<h1>Employee List</h1>
+
+@if (User.IsInRole("Admin"))
+{
+<div>
+    <a class="btn btn-outline-primary my-2" asp-action="Create">Create New</a>
+    <button type="button" class="btn btn-outline-primary my-2" data-toggle="collapse" data-target="#collapseImport" aria-expanded="false" aria-controls="collapseImport">Import Employees</button>
+    @if (changeColer == 0)
+    {
+        @Html.GenerateFiltering((IGridFilterFilterable)gridFilter)
+    }
+    else
+    {
+        @Html.GenerateFiltered((IGridFilterFilterable)gridFilter)
+    }
+    <form class="my-3" asp-action="InsertFromExcel" asp-controller="Employees" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="collapse" id="collapseImport">
+            <div class="form-horizontal">
+                <div class="card card-body bg-light">
+                    <div class="row">
+                        <div class="custom-file col-md-4">
+                            <label for="theExcel" class="custom-file-label">
+                                <i class="fa fa-cloud-upload"></i> Upload Excel File:
+                            </label>
+                            <input id="theExcel" name="theExcel" type="file" class="custom-file-input">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <input type="submit" value="Upload Data" class="btn btn-primary" />
+                            </div>
+                        </div>
+                        <div class="custom-file col-md-4">
+                            <p><a href="/templates/Employee_Import_Template_V8.xlsx" download> Click to Download Template</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+}
+else {
+    @if (changeColer == 0)
+    {
+        @Html.GenerateFiltering((IGridFilterFilterable)gridFilter)
+    }
+    else
+    {
+        @Html.GenerateFiltered((IGridFilterFilterable)gridFilter)
+    }
+}
+
+<div class="overflow-auto">
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th>
+                    <a class="data-sortable" data-name="FullName">
+                        <span>@Html.DisplayNameFor(model => model.FullName)</span>
+                        <span class="caret
+                          @(sorts["OrderField"] == "FullName" && sorts["OrderDir"] == "DESC" ? "up" : "down")">
+                        </span>
+                    </a>
+                </th>
+                <th>
+                    <a class="data-sortable" data-name="JobPositionID">
+                        <span>@Html.DisplayNameFor(model => model.JobPosition)</span>
+                        <span class="caret
+                        @(sorts["OrderField"] == "JobPositionID" && sorts["OrderDir"] == "DESC" ? "up" : "down")">
+                        </span>
+                    </a>
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.WorkPhone)
+                </th>
+                <th>
+                    <a class="data-sortable" data-name="Email">
+                        <span>@Html.DisplayNameFor(model => model.Email)</span>
+                        <span class="caret
+                        @(sorts["OrderField"] == "Email" && sorts["OrderDir"] == "DESC" ? "up" : "down")">
+                        </span>
+                    </a>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.FullName)
+                    </td>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.JobPosition.Position)
+                    </td>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.WorkPhone)
+                    </td>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.Email)
+                    </td>
+                    <td class="align-middle">
+                        <div class="row w-100">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a class="btn btn-sm btn-outline-primary col-12 col-xl-6" asp-action="Details" asp-route-id="@item.EmployeeID">Details</a>
+                                <a class="btn btn-sm btn-outline-info col-12 col-xl-6" asp-action="Edit" asp-route-id="@item.EmployeeID">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger col-12" asp-action="Delete" asp-route-id="@item.EmployeeID">Delete</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-sm btn-outline-dark px-3" asp-action="Details" asp-route-id="@item.EmployeeID">Details</a>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (!Model.Any())
+    {
+        <h4 class="text-center">There is no data found...</h4>
+    }
+    @Html.GeneratePagination((IGridFilterPaginatable)gridFilter)
+</div>
+
+<script>
+    const FILTER_URL = "@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")";
+</script>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript">
+    const url = new URLSearchParams(window.location.search);
+    $('#theExcel').change(function () {
+        var i = $(this).prev('label').clone();
+        var file = $('#theExcel')[0].files[0].name;
+        $(this).prev('label').text(file);
+    });
+    $(document).ready(function () {
+        $("#employeesManagementSubmenu").attr("style", "color: #862633; background: #fff;");
+    })
+</script>

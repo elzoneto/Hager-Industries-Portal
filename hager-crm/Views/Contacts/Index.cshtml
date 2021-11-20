@@ -1,0 +1,145 @@
+﻿@model IEnumerable<hager_crm.Models.Contact>
+@using hager_crm.Helpers;
+@using hager_crm.Utils;
+@{
+    ViewData["Title"] = @ViewData["CType"] + " Contacts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var gridFilter = ViewBag.gridFilter;
+    var sorts = gridFilter.OuterSorts;
+    int changeColer = (int)@ViewData["ChangeColor"];
+}
+
+<h1>@Context.Request.Query["CType"] @Context.Request.Query["CompanyName"] Contact list</h1>
+
+<div>
+    @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+    {
+        <a class="btn btn-outline-primary my-2" asp-action="Create" asp-route-CType="@Context.Request.Query["CType"]">Add New</a>
+    }
+    @if (changeColer == 0)
+    {
+        @Html.GenerateFiltering((IGridFilterFilterable)gridFilter)
+    }
+    else
+    {
+        @Html.GenerateFiltered((IGridFilterFilterable)gridFilter)
+    }
+</div>
+
+<div class="overflow-auto">
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th>
+                    <a class="data-sortable" data-name="ContactName">
+                        <span>Contact</span>
+                        <span class="caret
+                          @(sorts["OrderField"] == "ContactName" && sorts["OrderDir"] == "DESC" ? "up" : "down")">
+                        </span>
+                    </a>
+                </th>
+                <th>
+                    Email
+                </th>
+                <th>
+                    <a class="data-sortable" data-name="CompanyName">
+                        <span>Company</span>
+                        <span class="caret
+                        @(sorts["OrderField"] == "CompanyName" && sorts["OrderDir"] == "DESC" ? "up" : "down")">
+                        </span>
+                    </a>
+                </th>
+                <th>
+                    Job Title
+                </th>
+                <th>
+                    Category
+                </th>
+                <th>
+                    Active
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.FullName)
+                    </td>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.Email)
+                    </td>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.Company.Name)
+                    </td>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.JobTitle)
+                    </td>
+                    <td class="align-middle">
+                        @{
+                            int catCount = item.ContactCategories.Count;
+                            if (catCount > 0)
+                            {
+                                string firstCat = item.ContactCategories.FirstOrDefault().Categories.Category;
+                                if (catCount > 1)
+                                {
+                                    string catList = "";
+                                    var a = item.ContactCategories.ToList();
+                                    for (int i = 1; i < catCount; i++)
+                                    {
+                                        catList += a[i].Categories.Category + " <br />";
+                                    }
+                                    <a class="" role="button" data-toggle="collapse" href="#collapseSum@(item.ContactID)" aria-expanded="false" aria-controls="collapseSum@(item.ContactID)">
+                                        @firstCat... <span class="badge badge-info">@catCount</span>
+                                    </a>
+                                    <div class="collapse" id="collapseSum@(item.ContactID)">
+                                        @Html.Raw(catList)
+                                    </div>
+                                }
+                                else
+                                {
+                                    @firstCat
+                                }
+                            }
+                        }
+                    </td>
+                    <td class="align-middle">
+                        @Html.DisplayFor(modelItem => item.Active)
+                    </td>
+                    <td class="align-middle">
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                        {
+                        <div class="row w-100">
+                            <a class="btn btn-sm btn-outline-primary col-12 col-xl-6" asp-action="Details" asp-route-id="@item.ContactID" asp-route-CType="@Context.Request.Query["CType"]">Details</a>
+                            <a class="btn btn-sm btn-outline-info col-12 col-xl-6" asp-action="Edit" asp-route-id="@item.ContactID" asp-route-CType="@Context.Request.Query["CType"]">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger col-12" asp-action="Delete" asp-route-id="@item.ContactID" asp-route-CType="@Context.Request.Query["CType"]">Delete</a>
+                        </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-sm btn-outline-dark px-3" asp-action="Details" asp-route-id="@item.ContactID" asp-route-CType="@Context.Request.Query["CType"]">Details</a>
+                        }
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (!Model.Any())
+    {
+        <h4 class="text-center">There is no data found...</h4>
+    }
+    @Html.GeneratePagination((IGridFilterPaginatable)gridFilter)
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+    const FILTER_URL = "@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")";
+    const cType = ['All', 'Customer', 'Vendor', 'Contractor'];
+    const url = new URLSearchParams(window.location.search);
+    $(document).ready(function () {
+        $("#@Context.Request.Query["CType"].ToString().ToLower()ContactsSubmenu").attr("style", "color: #862633; background: #fff;");
+    })
+</script>

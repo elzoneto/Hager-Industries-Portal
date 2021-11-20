@@ -1,0 +1,4 @@
+﻿Add-Migration -Context HagerContext -o Data\HIMigrations Initial
+Add-Migration -Context ApplicationDbContext -o Data\AppMigrations Initial
+Update-Database -Context HagerContext 
+Update-Database -Context ApplicationDbContext

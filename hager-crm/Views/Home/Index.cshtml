@@ -1,0 +1,300 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>Dashboard</h1>
+
+<div class="row">
+    <div class="col-12 col-lg-7">
+        <div class="card h-100 p-4">
+            <h4 class="card-title">Announcements 📢</h4>
+            <div class="card h-100">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="announcement-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="news-unread-tab" data-toggle="tab" href="#news-unread-panel" role="tab" aria-controls="news-unread-tab" aria-selected="true">Unread News</a>
+                        </li>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" id="news-all-tab" data-toggle="tab" href="#news-all-panel" role="tab" aria-controls="news-all-tab" aria-selected="false">All News</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div>
+                    <div class="tab-content" id="announcement-tab-content">
+                        <div class="tab-pane fade" id="news-unread-panel" role="tabpanel" aria-labelledby="news-unread-tab"></div>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                        {
+                            <div class="tab-pane fade" id="news-all-panel" role="tabpanel" aria-labelledby="news-all-tab"></div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-5">
+        <div class="card p-4 mb-2">
+            <h4 class="card-title">Statistics 📋</h4>
+            <ul class="list-group">
+                @*Check Active employees(Admin), active companies, maybe leave the contracts ending soon as example to stats(Admin, Supervisor).*@
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Contracts to end soon
+                    <span class="badge badge-warning badge-pill">@ViewBag.ContractsToExpire</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Contracts Expired
+                    <span class="badge badge-danger badge-pill">@ViewBag.ContractsExpired</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a asp-controller="Companies" asp-action="Index" asp-route-Active="true" class="text-dark nav-link" style="padding:0">
+                        Active Companies
+                    </a>
+                    <span class="badge badge-info badge-pill">@ViewBag.ActiveCompany/@ViewBag.AllCompanies</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a asp-controller="Companies" asp-action="Index" asp-route-Active="true" class="text-dark nav-link" style="padding:0">
+                        New Companies
+                    </a>
+                    <span class="badge badge-info badge-pill">@ViewBag.NewCompanies</span>
+                </li>
+                @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a asp-controller="Employees" asp-action="Index" asp-route-Active="true" class="text-dark nav-link" style="padding:0">
+                            Active Employees
+                        </a>
+                        <span class="badge badge-success badge-pill">@ViewBag.ActiveEmployee/@ViewBag.AllEmployees</span>
+                    </li>
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                    @if (ViewBag.DuplicationCompany == 0)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Company Duplicates
+                            <span class="badge badge-warning badge-pill">@ViewBag.DuplicationCompany</span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center alert alert-warning nav-item">
+                            <a asp-controller="Companies" asp-action="Index" asp-route-CType="All" class="text-dark p-0">
+                                Company Duplicates
+                            </a>
+                            <span class="badge badge-warning badge-pill">@ViewBag.DuplicationCompany</span>
+                        </li>
+                    }
+                }
+            </ul>
+
+        </div>
+        <div class="card p-4" id="events">
+            <h4 class="card-title">Important Dates 📅</h4>
+            <div class="accordion">
+                @{ var count = 0;}
+                @foreach (Calendar calendar in ViewBag.Event)
+                {
+                    count += 1;
+
+                    <div class="accordion-item d-block" id="accordionCalendar">
+                        <h5 class="accordion-header" id="heading-@count">
+                            <button class="btn btn-lg btn-light nav-fill collapsed" type="button" data-toggle="collapse" data-target="#collapse-@count" aria-controls="collapse-@count">
+                                @calendar.Title - @calendar.Company.Name
+                                <span class="badge badge-pill badge-warning">@calendar.Date.ToString("dd/MM")</span>
+                            </button>
+                        </h5>
+                        <div id="collapse-@count" class="accordion-collapse collapse" aria-labelledby="#heading-@count" data-parent="#accordionCalendar">
+                            <div class="accordion-body list-group-item d-flex justify-content-between align-items-center">
+                                @calendar.Description
+                                <button type="button" class="close" aria-label="Close" data-id="@calendar.CalendarId" onclick="DeleteCalendar(this)">
+                                    <span class="small" aria-hidden="true">🗑️</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            @*Check DOB dates and and maybe add a birthday card, img
+                @foreach (Employee employee in ViewBag.Birthday)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @{
+                            var birthDay = employee.DOB ?? DateTime.Today;
+                            birthDay = new DateTime(DateTime.Today.Year, birthDay.Month, birthDay.Day);
+                            var d = (birthDay - DateTime.Today).Days;
+                        }
+                        <a asp-controller="Employees" asp-action="Details" asp-route-id="@employee.EmployeeID" class="text-dark p-0">
+                            @employee.FullName:
+                        </a>
+                        @(birthDay.ToString("MMM d"))
+                        <span class="badge badge-pill badge-warning">
+                            in @d
+                            @if (d > 1)
+                            {
+                                @: days
+                            }
+                            else
+                            {
+                                @: day
+                            }
+                        </span>
+                    </li>
+                }*@
+            @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+            {
+                <hr class="m-0 mb-2" />
+                <button class="btn btn-primary m-2" type="button" data-toggle="collapse" data-target="#calendarCollapse" aria-expanded="false" aria-controls="calendarCollapse">
+                    Create new Event
+                </button>
+                <div class="collapse" id="calendarCollapse">
+                    <div class="card-body">
+                        <form id="postCalendar" onsubmit="return PostCalendar(this)">
+                            <div class="form-group">
+                                <label for="calendarTitle">Title</label>
+                                <input class="form-control" id="calendarTitle" minlength="4" maxlength="64" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="calendarDescription">Description</label>
+                                <textarea class="form-control" id="calendarDescription" rows="3" minlength="16" maxlength="256" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="calendarDate">Date</label>
+                                <input class="form-control" id="calendarDate" type="date" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="calendarCompany">Company</label>
+                                <select class="form-control" id="calendarCompany" required>
+                                    <option>Select a Company</option>
+                                    @foreach (Company company in ViewBag.Company)
+                                    {
+                                        <option value="@company.CompanyID">@company.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Event</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        function ReadAnnouncement(target) {
+            $.post("Announcement/ReadAnnouncement", { id: $(target).data('id') }, function () {
+                refreshTab('news-unread-tab');
+            })
+                .fail(function () {
+                    alert("Something went wrong");
+                });
+        }
+
+        function refreshTab(activeTab) {
+            switch (activeTab) {
+                case 'news-unread-tab': $('#news-unread-panel').load('/Announcement/GetUnreadAnnouncements');
+                    break;
+                case 'news-all-tab': $('#news-all-panel').load('/Announcement/GetAnnouncements');
+                    break;
+                default:
+                    break;
+            }
+        }
+        $('.nav-link').click(function () {
+            var activeTab = $(this).attr("id");
+            refreshTab(activeTab);
+        });
+        window.onload = function () {
+            $('#news-unread-panel').load('/Announcement/GetUnreadAnnouncements');
+            $('#news-unread-panel').addClass("show active in");
+            $("#homeSubmenu").attr("style", "color: #862633; background: #fff;");
+        }
+    </script>
+    @if (User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+    {
+        <script type="text/javascript">
+
+            function PostAnnouncement(target) {
+                let $frm = $(target);
+                let body = {
+                    title: $frm.find("#announcementTitle").val(),
+                    message: $frm.find("#announcementMessage").val(),
+                    severity: $frm.find("#announcementSeverity").val(),
+                };
+
+                $.post("Announcement/PostAnnouncement", body, function () {
+                    target.reset();
+                    alert("Posted Successfully!");
+                    refreshTab('news-all-tab');
+                })
+                    .fail(function (result) {
+                        alert("Something went wrong");
+                        console.log(result);
+                    });
+                return false;
+            }
+            function DeleteAnnouncement(target) {
+                $.post("Announcement/DeleteAnnouncement", { id: $(target).data('id') }, function () {
+                    alert("Deleted Successfully!");
+                    refreshTab('news-all-tab');
+                })
+                    .fail(function () {
+                        alert("Something went wrong");
+                    });
+            }
+            // function UpdateAnnouncement(target){
+            //     alert("update");
+            //     let $frm = $(target).parent();
+            //     $.post();
+            // }
+
+            //Event Calendar Query
+            function PostCalendar(target) {
+                let $frm = $(target);
+                let body = {
+                    title: $frm.find("#calendarTitle").val(),
+                    description: $frm.find("#calendarDescription").val(),
+                    companyid: $frm.find("#calendarCompany").val(),
+                    date: $frm.find("#calendarDate").val(),
+                };
+
+                $.post("Calendar/PostCalendar", body, function () {
+                    target.reset();
+                    alert("Posted Successfully!");
+                    $("#events").load(location.href + " #events");
+                })
+                    .fail(function (result) {
+                        alert("Something went wrong");
+                        console.log(result);
+                    });
+                return false;
+            }
+
+            function DeleteCalendar(target) {
+                $.post("Calendar/DeleteCalendar", { id: $(target).data('id') }, function () {
+                    alert("Deleted Successfully!");
+                    $("#events").load(location.href + " #events");
+                })
+                    .fail(function () {
+                        alert("Something went wrong");
+                    });
+            }
+        </script>
+    }
+    <script>
+        //Register the service worker.
+        //Note is is still not "installable" without the manifest
+        if (navigator.serviceWorker.controller) {
+            console.log('Active service worker found, no need to register');
+        } else {
+            navigator.serviceWorker.register('sw.js', {
+                scope: './'
+            }).then(function (reg) {
+                console.log('Service worker has been registered for scope:' + reg.scope);
+            });
+        }
+    </script>
+}

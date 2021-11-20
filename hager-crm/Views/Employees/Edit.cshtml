@@ -1,0 +1,162 @@
+﻿@model hager_crm.Models.Employee
+
+@{
+    ViewData["Title"] = "Edit Employee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit @Model.FullName</h1>
+<hr />
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-12">
+        <form asp-action="Edit">
+            <div class="row">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="EmployeeID" />
+                <div class="col-md-6 col-12">
+                    <div class="form-group">
+                        <label asp-for="FirstName" class="control-label"></label>
+                        <input asp-for="FirstName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LastName" class="control-label"></label>
+                        <input asp-for="LastName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="JobPositionID" class="control-label"></label>
+                        <select asp-for="JobPositionID" class="form-control" asp-items="ViewBag.JobPositionID"></select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmploymentTypeID" class="control-label"></label>
+                        <select asp-for="EmploymentTypeID" class="form-control" asp-items="ViewBag.EmploymentTypeID"></select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeAddress1" class="control-label"></label>
+                        <input asp-for="EmployeeAddress1" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeAddress2" class="control-label"></label>
+                        <input asp-for="EmployeeAddress2" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeCity" class="control-label"></label>
+                        <input asp-for="EmployeeCity" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeProvinceID" class="control-label"></label>
+                        <select asp-for="EmployeeProvinceID" class="form-control" asp-items="ViewBag.EmployeeProvinceID"></select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeePostalCode" class="control-label"></label>
+                        <input asp-for="EmployeePostalCode" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeCountryID" class="control-label"></label>
+                        <select asp-for="EmployeeCountryID" class="form-control" asp-items="ViewBag.EmployeeCountryID"></select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="CellPhone" class="control-label"></label>
+                        <input asp-for="CellPhone" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="WorkPhone" class="control-label"></label>
+                        <input asp-for="WorkPhone" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-6 col-12">
+                    <div class="form-group">
+                        <label asp-for="DOB" class="control-label"></label>
+                        <input asp-for="DOB" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Wage" class="control-label"></label>
+                        <input asp-for="Wage" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Expense" class="control-label"></label>
+                        <input asp-for="Expense" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="DateJoined" class="control-label"></label>
+                        <input asp-for="DateJoined" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="KeyFob" class="control-label"></label>
+                        <input asp-for="KeyFob" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmergencyContactName" class="control-label"></label>
+                        <input asp-for="EmergencyContactName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmergencyContactPhone" class="control-label"></label>
+                        <input asp-for="EmergencyContactPhone" class="form-control" />
+                    </div>
+                    <div class="form-group form-check">
+                        <label class="form-check-label">
+                            <input class="form-check-input" asp-for="Active" /> @Html.DisplayNameFor(model => model.Active)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Notes" class="control-label"></label>
+                        <textarea asp-for="Notes" rows="5" cols="25" class="form-control"></textarea>
+                    </div>
+                    @if (!Model.IsUser)
+                    {
+                        <div class="form-group form-check">
+                            <label class="form-check-label" data-toggle="collapse" data-target="#userAccountSetup" aria-expanded="false" aria-controls="userAccountSetup">
+                                @* Weird kludge from aspnet *@
+                                <input id="isUser" type="checkbox" class="form-check-input" value="true" name="isUser" /> Is User
+                                <input type="hidden" value="false" name="isUser" />
+                            </label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" checked disabled /> Is User
+                            </label>
+                        </div>
+                    }
+                    <div id="userAccountSetup" class="form-group @(!Model.IsUser? "collapse": "")">
+                        <div class="card card-body">
+                            <h5 class="card-title"> @(!Model.IsUser? "Setup" : "Update password for ") User Account</h5>
+                            <div class="form-group">
+                                <label class="control-label">Password</label>
+                                <input type="password" name="userPassword" class="form-control" autocomplete="new-password" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Repeat Password</label>
+                                <input type="password" name="userRepeatPassword" class="form-control" autocomplete="new-password" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <input type="submit" value="Save" class="btn btn-primary" />
+                        <a class="btn btn-secondary" href='@ViewData["returnURL"]'>Back to List of Employees</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#employeesManagementSubmenu").attr("style", "color: #862633; background: #fff;");
+    })
+</script>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

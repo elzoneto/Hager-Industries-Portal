@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Hager CRM</title>
+
+    @* Bootstrap and CSS*@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="manifest" href="~/manifest.json" />
+</head>
+<body>
+    <div class="wrapper">
+        @* Sidebar *@
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <div>
+                    <img src="~/assets/AppLogo_White.png" alt="Application Logo" />
+                </div>
+                <button type="button" id="sidebarCollapse" class="btn">
+                    <i class="fas fa-align-left"></i>
+                    <span>≡</span>
+                </button>
+            </div>
+
+            @* The menu and links *@
+            <ul id="menuLinks" class="list-unstyled components">
+                <li><a id="homeSubmenu" asp-controller="Home" asp-action="Index">Home</a></li>
+                <li>
+                    <a id="toggleCompaniesSubmenu" href="#companiesSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Companies</a>
+                    <ul class="collapse list-unstyled" id="companiesSubmenu">
+                        <li><a id="allCompaniesSubmenu" asp-controller="Companies" asp-action="Index" asp-route-CType="All" asp-route-Active="true">All Companies</a></li>
+                        <li><a id="customerCompaniesSubmenu" asp-controller="Companies" asp-action="Index" asp-route-CType="Customer" asp-route-Active="true">Customers</a></li>
+                        <li><a id="vendorCompaniesSubmenu" asp-controller="Companies" asp-action="Index" asp-route-CType="Vendor" asp-route-Active="true">Vendors</a></li>
+                        <li><a id="contractorCompaniesSubmenu" asp-controller="Companies" asp-action="Index" asp-route-CType="Contractor" asp-route-Active="true">Contractors</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a id="toggleContactsSubmenu" href="#contactsSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Contacts</a>
+                    <ul class="collapse list-unstyled" id="contactsSubmenu">
+                        <li><a id="allContactsSubmenu" asp-controller="Contacts" asp-action="Index" asp-route-CType="All" asp-route-Active="true">All Contacts</a></li>
+                        <li><a id="customerContactsSubmenu" asp-controller="Contacts" asp-action="Index" asp-route-CType="Customer" asp-route-Active="true">Customers</a></li>
+                        <li><a id="vendorContactsSubmenu" asp-controller="Contacts" asp-action="Index" asp-route-CType="Vendor" asp-route-Active="true">Vendors</a></li>
+                        <li><a id="contractorContactsSubmenu" asp-controller="Contacts" asp-action="Index" asp-route-CType="Contractor" asp-route-Active="true">Contractors</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a id="toggleManagementSubmenu" href="#managementSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Management</a>
+                    <ul class="collapse list-unstyled" id="managementSubmenu">
+                        <li><a id="employeesManagementSubmenu" asp-controller="Employees" asp-action="Index">Employees</a></li>
+                    </ul>
+                </li>
+                @if (User.IsInRole("Admin"))
+                {
+                    <li>
+                        <a id="toggleAdminSubmenu" href="#adminSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Admin Options</a>
+                        <ul class="collapse list-unstyled" id="adminSubmenu">
+                            <li><a id="configurationAdminSubmenu" asp-controller="Configuration" asp-action="Index">Configuration</a></li>
+                        </ul>
+                    </li>
+                }
+
+            </ul>
+        </nav>
+
+        @* Mask *@
+        <div id="mask">
+        </div>
+
+        @* Navbar *@
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <div> </div>
+                <div>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+
+        @* Page Content *@
+        <div id="content">
+            <div class="container">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+
+        @* Page foot *@
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2021 - Hager CRM
+            </div>
+        </footer>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="~/lib/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @* Toggle collapse button with JS*@
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            let localStorage = window.localStorage;
+            if (localStorage.getItem('menuHidden') === null)
+                localStorage.setItem('menuHidden', '');
+
+            if (!!localStorage.getItem('menuHidden')) {
+                let $elements = $('#sidebar, #content, .footer, .navbar');
+                $elements.addClass('notransition');
+                $elements.addClass('active');
+                $('.collapse.in').addClass('in');
+                if ($(window).width() <= 768) {
+                    $('#mask').css("background", "rgba(0, 0, 0, 0.75)");
+                    $('#mask').css("z-index", 100);
+                }
+                $elements[0].offsetHeight; // Cool trick, force browser to flush css transitions
+                $elements.removeClass('notransition');
+            }
+
+            $("#sidebar").mCustomScrollbar({
+                theme: "minimal"
+            });
+
+            function toggleMenu() {
+                if (!!localStorage.getItem('menuHidden')) {
+                    $('#sidebar, #content, .footer, .navbar').removeClass('active');
+                    $('.collapse.in').removeClass('in');
+                    if ($(window).width() <= 768) {
+                        $('#mask').css("background", "#fff");
+                        $('#mask').css("z-index", -100);
+                    }
+                    localStorage.setItem('menuHidden', '');
+                } else {
+                    $('#sidebar, #content, .footer, .navbar').addClass('active');
+                    $('.collapse.in').addClass('in');
+                    if ($(window).width() <= 768) {
+                        $('#mask').css("background", "rgba(0, 0, 0, 0.75)");
+                        $('#mask').css("z-index", 100);
+                    }
+                    localStorage.setItem('menuHidden', '1');
+                }
+            }
+            $('#sidebarCollapse').on('click', toggleMenu);
+            $('#mask').on('click', toggleMenu);
+
+
+            if (localStorage.getItem('companiesCollapsed') != 'true')
+                localStorage.setItem('companiesCollapsed', 'false');
+            else {
+                $('#sidebar, #content, #companiesSubmenu, .footer, .navbar').addClass('notransition');
+                $('#toggleCompaniesSubmenu').attr('aria-expanded', 'true');
+                $('#toggleCompaniesSubmenu').removeClass('collapsed');
+                $('#companiesSubmenu').addClass('show');
+                $('#sidebar, #content, #companiesSubmenu, .footer, .navbar').removeClass('notransition');
+            }
+            $('#toggleCompaniesSubmenu').on('click', function () {
+                if (localStorage.getItem('companiesCollapsed') != 'true')
+                    localStorage.setItem('companiesCollapsed', 'true');
+                else
+                    localStorage.setItem('companiesCollapsed', 'false');
+            });
+
+            if (localStorage.getItem('contactsCollapsed') != 'true')
+                localStorage.setItem('contactsCollapsed', 'false');
+            else {
+                $('#sidebar, #content, #contactsSubmenu, .footer, .navbar').addClass('notransition');
+                $('#toggleContactsSubmenu').attr('aria-expanded', 'true');
+                $('#toggleContactsSubmenu').removeClass('collapsed');
+                $('#contactsSubmenu').addClass('show');
+                $('#sidebar, #content, #contactsSubmenu, .footer, .navbar').removeClass('notransition');
+            }
+            $('#toggleContactsSubmenu').on('click', function () {
+                if (localStorage.getItem('contactsCollapsed') != 'true')
+                    localStorage.setItem('contactsCollapsed', 'true');
+                else
+                    localStorage.setItem('contactsCollapsed', 'false');
+            });
+
+            if (localStorage.getItem('managementCollapsed') != 'true')
+                localStorage.setItem('managementCollapsed', 'false');
+            else {
+                $('#sidebar, #content, #managementSubmenu, .footer, .navbar').addClass('notransition');
+                $('#toggleManagementSubmenu').attr('aria-expanded', 'true');
+                $('#toggleManagementSubmenu').removeClass('collapsed');
+                $('#managementSubmenu').addClass('show');
+                $('#sidebar, #content, #managementSubmenu, .footer, .navbar').removeClass('notransition');
+            }
+            $('#toggleManagementSubmenu').on('click', function () {
+                if (localStorage.getItem('managementCollapsed') != 'true')
+                    localStorage.setItem('managementCollapsed', 'true');
+                else
+                    localStorage.setItem('managementCollapsed', 'false');
+            });
+
+            if (localStorage.getItem('adminCollapsed') != 'true')
+                localStorage.setItem('adminCollapsed', 'false');
+            else {
+                $('#sidebar, #content, #adminSubmenu, .footer, .navbar').addClass('notransition');
+                $('#toggleAdminSubmenu').attr('aria-expanded', 'true');
+                $('#toggleAdminSubmenu').removeClass('collapsed');
+                $('#adminSubmenu').addClass('show');
+                $('#sidebar, #content, #adminSubmenu, .footer, .navbar').removeClass('notransition');
+            }
+            $('#toggleAdminSubmenu').on('click', function () {
+                if (localStorage.getItem('adminCollapsed') != 'true')
+                    localStorage.setItem('adminCollapsed', 'true');
+                else
+                    localStorage.setItem('adminCollapsed', 'false');
+            });
+
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
